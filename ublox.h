@@ -206,5 +206,6 @@ uBloxChecksum ublox_calc_checksum(const uint8_t msgClass, const uint8_t msgId, c
 void ublox_handle_incoming_byte(uint8_t data);
 void ublox_handle_packet(uBloxPacket *pkt);
 uint8_t ublox_wait_for_ack();
+void ublox_gps_stop();
 
 #endif //RS41HUP_UBLOX_H

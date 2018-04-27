@@ -9,7 +9,7 @@
 
 
 //************GLOBAL Settings*****************
-#define TRANSMIT_FREQUENCY  434.650f //Mhz middle frequency
+#define TRANSMIT_FREQUENCY  434.650f // MHz. (Default is within the ISM band. ARDF Frequency in Australia is 439.4 MHz) 
 #define CALLSIGN "N0CALL" // Put your callsign here, max. 15 characters
 
 // TX Power
@@ -31,28 +31,28 @@
 // Morse Ident speed.
 #define MORSE_WPM	20
 
-// CW beacon on/off time.
-#define ON_TIME		10
-#define OFF_TIME	1
+// CW beacon on & off times.
+#define ON_TIME		5 // Seconds
+#define OFF_TIME	1 // Seconds
 
-// On/Off Repeats.
-#define ONOFF_REPEATS 1
+// Number of On/Off Repeats.
+#define ONOFF_REPEATS 2
 
 // Low-Voltage Beacon 
-// If enabled (uncommment), beacon the lat/lon of the fox in the CW ident when the battery voltage gets low.
-//#define LOW_VOLTAGE_BEACON 1
-#define LOW_VOLTAGE_BEACON_THRESHOLD 2.5 // Volts
+// If enabled (uncommmented), beacon the lat/lon of the fox in the CW ident when the battery voltage gets low.
+// NOTE: If you are going to place the fox in a location with no GPS reception, disable this mode,
+// else it will draw lots of power trying to acquire GPS signal.
+#define LOW_VOLTAGE_BEACON 1
 
-// Low-Voltage Cutout - Kill power if the supply drops below this level.
-#define LOW_VOLTAGE_CUTOUT 2.0 // Volts
+// Low-Voltage beacon threshold voltage. For ~4-5 hours of position beaconing before going flat, use:
+// Lithium AA: 2.7 volts  (Refer 100mA discharge curve here: http://data.energizer.com/pdfs/l91.pdf )
+// Alkaline AA: 2.2 volts (Refer 100mA discharge curve here: http://data.energizer.com/pdfs/e91.pdf )
+#define LOW_VOLTAGE_BEACON_THRESHOLD 2.2 // Volts
 
-//*************RTTY SETTINGS******************
-// Used if the RTTY 'emergency' message is enabled.
-#define BAUD_RATE  100 // RTTY Message Baud rate
-#define RTTY_DEVIATION 0x3	// RTTY shift = RTTY_DEVIATION x 270Hz
-#define RTTY_7BIT   1 // if 0 --> 5 bits
-#define RTTY_USE_2_STOP_BITS   1
+// Low-Voltage Cutout - Kill power if the supply drops below this level. Useful to avoid destroying cells.
+// Set this to < 1 Volt for (essentially) no low-voltage cutout.
+#define LOW_VOLTAGE_CUTOUT 0.5 // Volts
+
 
 #endif
-
 #endif //RS41HUP_CONFIG_H

@@ -123,6 +123,8 @@ void ublox_init(){
   } while (!ublox_wait_for_ack());
 }
 
+
+
 void ublox_handle_incoming_byte(uint8_t data){
   static uint8_t sync = 0;
   static uint8_t buffer_pos = 0;
@@ -208,4 +210,14 @@ uint8_t ublox_wait_for_ack() {
   return ack_received;
 }
 
+
+void ublox_gps_stop(){
+  // Set the GPS into a stopped mode.
+    uBloxPacket msgcfgrst = {.header = {0xb5, 0x62, .messageClass=0x06, .messageId=0x04, .payloadSize=sizeof(uBloxCFGRSTPayload)},
+      .data.cfgrst = { .navBbrMask=0xffff, .resetMode=8, .reserved1 = 0}
+  };
+  do {
+    send_ublox_packet(&msgcfgrst);
+  } while (!ublox_wait_for_ack());
+}
 

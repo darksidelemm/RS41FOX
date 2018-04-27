@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <misc.h>
-#include "f_rtty.h"
 #include "init.h"
 #include "config.h"
 #include "radio.h"
@@ -23,37 +22,19 @@
 #include "morse.h"
 
 
-// IO Pins Definitions. The state of these pins are initilised in init.c
+// IO Pin Definitions. The state of these pins are initilised in init.c
 #define GREEN  GPIO_Pin_7 // Inverted
 #define RED  GPIO_Pin_8 // Non-Inverted (?)
+#define SHUTDOWN  GPIO_Pin_12 // Set high to trigger the power circuitry to power down.
 
 
-// Telemetry Data to Transmit - used in RTTY & MFSK packet generation functions.
-unsigned int send_count;        //frame counter
+// Telemetry Data to Transmit
 int voltage;
-int8_t si4032_temperature;
 GPSEntry gpsData;
-
+int gpsFixed = 0;
+// String and Transmit Buffers
 char callsign[15] = {CALLSIGN};
-char status[2] = {'N'};
-char buf_rtty[200];
-
-// Volatile Variables, used within interrupts.
-volatile int adc_bottom = 2000;
-volatile char flaga = 0; // GPS Status Flags
-volatile int led_enabled = 1; // Flag to disable LEDs at altitude.
-
-volatile unsigned char pun = 0;
-volatile unsigned int cun = 10;
-volatile unsigned char tx_on = 0;
-volatile unsigned int tx_on_delay;
-volatile unsigned char tx_enable = 0;
-rttyStates send_rtty_status = rttyZero;
-volatile char *tx_buffer;
-volatile uint16_t current_mfsk_byte = 0;
-volatile uint16_t packet_length = 0;
-volatile uint16_t button_pressed = 0;
-volatile uint8_t disable_armed = 0;
+char buf_tx[200];
 
 
 // Function Definitions
@@ -62,6 +43,7 @@ void send_rtty_message();
 void send_morse_ident();
 void power_down();
 void check_supply_voltage();
+void check_gps_lock();
 
 /**
  * GPS data processing
@@ -77,45 +59,10 @@ void USART1_IRQHandler(void) {
 }
 
 
-// Timer interrupt Handler.
-// 
-void TIM2_IRQHandler(void) {
-  if (TIM_GetITStatus(TIM2, TIM_IT_Update) != RESET) {
-    TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
-  }
-  // Do nothing...
-
-  if (tx_on) {
-      // RTTY Symbol selection logic.
-        send_rtty_status = send_rtty((char *) tx_buffer);
-
-        if (!disable_armed){
-          if (send_rtty_status == rttyEnd) {
-            if (led_enabled) GPIO_SetBits(GPIOB, RED);
-            if (*(++tx_buffer) == 0) {
-              tx_on = 0;
-              // Reset the TX Delay counter, which is decremented at the symbol rate.
-              tx_on_delay = 1000 / (1000/BAUD_RATE);
-              tx_enable = 0;
-              //radio_disable_tx(); // Don't turn off the transmitter!
-            }
-          } else if (send_rtty_status == rttyOne) {
-            radio_rw_register(0x73, RTTY_DEVIATION, 1);
-            if (led_enabled) GPIO_SetBits(GPIOB, RED);
-          } else if (send_rtty_status == rttyZero) {
-            radio_rw_register(0x73, 0x00, 1);
-            if (led_enabled) GPIO_ResetBits(GPIOB, RED);
-          }
-        }
-  }
-}
-
 int main(void) {
   RCC_Conf();
   NVIC_Conf();
   init_port();
-
-  init_timer(BAUD_RATE);
 
   delay_init();
   ublox_init();
@@ -126,11 +73,11 @@ int main(void) {
   USART_SendData(USART3, 0xc);
 
   radio_soft_reset();
-  // setting RTTY TX frequency
+  // Set Morse TX Frequency
   radio_set_tx_frequency(TRANSMIT_FREQUENCY);
 
-  // Set the fine PLL offset register so our CW signal is on the 'high' tone.
-  radio_rw_register(0x73, RTTY_DEVIATION, 1);
+  // Set PLL offset to 0
+  radio_rw_register(0x73, 0x00, 1);
 
   // setting TX power
   radio_rw_register(0x6D, 00 | (TX_POWER & 0x0007), 1);
@@ -147,12 +94,16 @@ int main(void) {
   // ADC configuration
   radio_rw_register(0x0f, 0x80, 1);
 
-  // Why do we have to do this again?
+  // For some reason we have to do this again...
   spi_init();
   radio_set_tx_frequency(TRANSMIT_FREQUENCY);   
   radio_rw_register(0x71, 0x00, 1);
-  init_timer(BAUD_RATE);
 
+  // If we aren't doing a low-voltage GPS position beacon,
+  // just disable the GPS from the start.
+  #ifndef LOW_VOLTAGE_BEACON
+  ublox_gps_stop();
+  #endif
 
   // Main Transmission Loop.
   while (1) {
@@ -168,10 +119,10 @@ int main(void) {
     }
 
     #ifdef LOW_VOLTAGE_BEACON
-    send_rtty_message();
+    check_gps_lock();
     #endif
-
     check_supply_voltage();
+
   }
 
 }
@@ -187,64 +138,66 @@ void send_morse_ident(){
   int _voltage_v = voltage/100;
   int _voltage_mv = voltage % 100;
 
-  sprintf(buf_rtty, "DE %s FOX %d.%dV", callsign, _voltage_v, _voltage_mv);
-  sendMorse(buf_rtty);
+  sprintf(buf_tx, "DE %s FOX %d.%dV", callsign, _voltage_v, _voltage_mv);
+  sendMorse(buf_tx);
 }
 
-
-void send_rtty_message() {
-  sprintf(buf_rtty,"THIS IS A TEST VK5QI\n");
-  //Configure for transmit
-  tx_buffer = buf_rtty;
-  // Enable the radio, and set the tx_on flag to 1.
-  start_bits = RTTY_PRE_START_BITS;
-  radio_enable_tx();
-  tx_on = 1;
-
-  // Wait until transmit has finished.
-  while(tx_on){
-    NVIC_SystemLPConfig(NVIC_LP_SEVONPEND, DISABLE);
-    __WFI();
-  }
-}
-
-
-void collect_telemetry_data() {
-  // Assemble and proccess the telemetry data we need to construct our RTTY and MFSK packets.
-  send_count++;
-  si4032_temperature = radio_read_temperature();
-  voltage = ADCVal[0] * 600 / 4096;
-  ublox_get_last_data(&gpsData);
-
-  if (gpsData.fix >= 3) {
-      flaga |= 0x80;
-      // Disable LEDs if altitude is > 1000m. (Power saving? Maybe?)
-      if ((gpsData.alt_raw / 1000) > 1000){
-        led_enabled = 0;
-      } else {
-        led_enabled = 1;
-      }
-  } else {
-      // No GPS fix.
-      flaga &= ~0x80;
-      led_enabled = 1; // Enable LEDs when there is no GPS fix (i.e. during startup)
-
-      // Null out lat / lon data to avoid spamming invalid positions all over the map.
-      gpsData.lat_raw = 0;
-      gpsData.lon_raw = 0;
-  }
-}
 
 void power_down(){
   // Pulsing GPIO 12 de-latches the power supply circuitry, 
   // killing power to the board.
-  GPIO_SetBits(GPIOA, GPIO_Pin_12);
+  GPIO_SetBits(GPIOA, SHUTDOWN);
 }
 
 void check_supply_voltage(){
   voltage = ADCVal[0] * 600 / 4096;
+
+  #ifdef LOW_VOLTAGE_BEACON
+  if( (float)(voltage)/100.0 < LOW_VOLTAGE_BEACON_THRESHOLD){
+    // Send the calculated GPS position if we have GPS lock.
+    if(gpsData.fix < 3){
+      sendMorse("NO GPS LOCK ");
+    } 
+    else {
+      // Convert raw lat/lon values into degrees and decimal degree values.
+      uint8_t lat_d = (uint8_t) abs(gpsData.lat_raw / 10000000);
+      uint32_t lat_fl = (uint32_t) abs(abs(gpsData.lat_raw) - lat_d * 10000000) / 1000;
+      uint8_t lon_d = (uint8_t) abs(gpsData.lon_raw / 10000000);
+      uint32_t lon_fl = (uint32_t) abs(abs(gpsData.lon_raw) - lon_d * 10000000) / 1000;
+
+      sprintf(buf_tx, "VK5QI FOX %s%d.%04ld %s%d.%04ld ",        
+          gpsData.lat_raw < 0 ? "S" : "N", lat_d, lat_fl,
+          gpsData.lon_raw < 0 ? "W" : "E", lon_d, lon_fl
+      );
+      sendMorse(buf_tx);
+    }
+  }
+  #endif
+
   if( (float)(voltage)/100 < LOW_VOLTAGE_CUTOUT){
-    sendMorse("LOW BATTERY");
+    sendMorse("LOW BATTERY ");
     power_down();
   }
+}
+
+void check_gps_lock(){
+  // If we have lock, return immediately.
+  if(gpsFixed){
+    return;
+  } 
+
+  // Otherwise, check to see if we have lock.
+  else {
+    ublox_get_last_data(&gpsData);
+  }
+
+  if(gpsData.fix >= 3){
+    // We have GPS lock!
+    sendMorse("GPS LOCK ");
+    gpsFixed = 1;
+
+    // Disable the GPS unit. This saves ~200mW of power.
+    ublox_gps_stop();
+  }
+
 }
