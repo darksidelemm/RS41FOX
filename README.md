@@ -47,4 +47,7 @@ In the case of a stationary radio fox, there isn't much point enabling the GPS a
 Achieved battery life will depend on your battery chemistry and transmit duty cycle. As a pessimistic estimate (assume 100% duty cycle, GPS disabled), we can state that the power consumption of the RS41 is 270mW.
 
 Using 2x [AA Lithium cells](http://data.energizer.com/pdfs/l91.pdf) (~3Ah @ 3V = 9 Wh), we have a runtime of approximately 33 hours.
-Using 2x [Alkaline AAs](http://data.energizer.com/pdfs/e91.pdf), (~2.5Ah @ 3V = 7.5 Wh), the expected runtime is 27 hours, though note that the discharge curve of the batteries is quite different to the Lithiums, and the low-voltage thresholds will need to be adjusted appropriately.
+Using 2x [Alkaline AAs](http://data.energizer.com/pdfs/e91.pdf), (~2.5Ah @ 3V = 7.5 Wh), the expected runtime is 27 hours (if operating continuously), though note that the discharge curve of the batteries is quite different to the Lithiums, and the low-voltage thresholds will need to be adjusted appropriately.
+
+### Runtime Actuals
+* 2x Energizer Industrial Alkaline - On = 10 seconds, Off = 10 seconds, Low Voltage Cutout = 0.5V - Runtime: 36 hours.
