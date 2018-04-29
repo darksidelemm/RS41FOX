@@ -32,11 +32,11 @@
 #define MORSE_WPM	20
 
 // CW beacon on & off times.
-#define ON_TIME		5 // Seconds
-#define OFF_TIME	1 // Seconds
+#define ON_TIME		10 // Seconds
+#define OFF_TIME	10 // Seconds
 
 // Number of On/Off Repeats.
-#define ONOFF_REPEATS 2
+#define ONOFF_REPEATS 1
 
 // Low-Voltage Beacon 
 // If enabled (uncommmented), beacon the lat/lon of the fox in the CW ident when the battery voltage gets low.

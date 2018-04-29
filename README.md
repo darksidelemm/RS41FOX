@@ -50,5 +50,5 @@ Using 2x [AA Lithium cells](http://data.energizer.com/pdfs/l91.pdf) (~3Ah @ 3V =
 Using 2x [Alkaline AAs](http://data.energizer.com/pdfs/e91.pdf), (~2.5Ah @ 3V = 7.5 Wh), the expected runtime is 27 hours (if operating continuously), though note that the discharge curve of the batteries is quite different to the Lithiums, and the low-voltage thresholds will need to be adjusted appropriately.
 
 ### Runtime Actuals
-* 2x Energizer Industrial Alkaline AA - On = 10 seconds, Off = 10 seconds, Low Voltage Cutout = 0.5V - Runtime: 36 hours.
-* 2x Energizer Lithium AA - On = 10 seconds, Off = 10 seconds, Low Voltage Cutout = 0.5V - Runtime: ??
+* 2x Energizer Industrial Alkaline AA - 20mW TX, On = 10 seconds, Off = 10 seconds, Low Voltage Cutout = 0.5V - Runtime: 36 hours.
+* 2x Energizer Lithium AA - 20mW TX, On = 10 seconds, Off = 10 seconds, Low Voltage Cutout = 0.5V - Runtime: ??
