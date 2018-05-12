@@ -41,6 +41,7 @@ char buf_tx[200];
 void collect_telemetry_data();
 void send_rtty_message();
 void send_morse_ident();
+void send_low_battery_beacon();
 void power_down();
 void check_supply_voltage();
 void check_gps_lock();
@@ -138,10 +139,23 @@ void send_morse_ident(){
   int _voltage_v = voltage/100;
   int _voltage_mv = voltage % 100;
 
-  sprintf(buf_tx, "DE %s FOX %d.%dV", callsign, _voltage_v, _voltage_mv);
+  sprintf(buf_tx, "DE %s FOX %d.%02dV", callsign, _voltage_v, _voltage_mv);
   sendMorse(buf_tx);
 }
 
+
+void send_low_battery_beacon(){
+  // Send an alternating tone beacon, to indicate the battery is getting low.
+  radio_enable_tx();
+  for(int i = 0; i<10; i++){
+    radio_rw_register(0x73, 0x02, 1);
+    _delay_ms(200);
+    radio_rw_register(0x73, 0x00, 1);
+    _delay_ms(200);
+  }
+  radio_disable_tx();
+  _delay_ms(1000);
+}
 
 void power_down(){
   // Pulsing GPIO 12 de-latches the power supply circuitry, 
@@ -154,6 +168,9 @@ void check_supply_voltage(){
 
   #ifdef LOW_VOLTAGE_BEACON
   if( (float)(voltage)/100.0 < LOW_VOLTAGE_BEACON_THRESHOLD){
+    // Send a beacon signal to indicate we are in low-battery mode.
+    send_low_battery_beacon();
+
     // Send the calculated GPS position if we have GPS lock.
     if(gpsData.fix < 3){
       sendMorse("NO GPS LOCK ");
