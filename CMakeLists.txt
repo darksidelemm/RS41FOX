@@ -5,7 +5,7 @@ SET(CMAKE_SYSTEM_VERSION 1)
 
 
 #
-# Set Toolchain Path Below
+# Set toolchain path below.
 #
 
 if (UNIX)
@@ -17,6 +17,16 @@ else ()
     CMAKE_FORCE_C_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-gcc.exe GNU)
     CMAKE_FORCE_CXX_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-g++.exe GNU)
 endif ()
+
+
+#
+# Select a method of programming below.
+#
+
+set(USE_OPENOCD "true")
+#set(USE_ST_FLASH "true")
+#set(USE_BLACK_MAGIC "true")
+
 
 project(RS41FOX C CXX)
 
@@ -54,12 +64,142 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
 
 set(CMAKE_CXX_STANDARD 11)
 
+
+#
+# make erase
+#
+# Does a security unlock, followed by a flash erase.
+#
+# Just doing an unlock on its own would only erase the flash, if the device had
+# previously been locked. To avoid surprising the user, we always erase the
+# flash.
+#
+# Note that security unlock is currently only supported if using openocd.
+#
+#
+# make halt
+#
+# Resets and then halts the device.
+#
+#
+# make run
+#
+# Resets and then runs the device.
+#
+#
+# make program-halt
+#
+# Programs the device, and leaves it halted.
+#
+# Does not require the device to be erased first, although it must not be
+# security locked.
+#
+#
+# make program
+#
+# Programs the device, and allows it to run after reset.
+#
+# Does not require the device to be erased first, although it must not be
+# security locked.
+#
+
+
+if (USE_OPENOCD)
+
+add_custom_target(erase
+        COMMENT "Unlocking and erasing device"
+        COMMAND openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c \"init\; reset halt\; stm32f1x unlock 0\; reset halt\; flash protect 0 0 last off\; reset halt\; flash erase_sector 0 0 last\; reset halt\; exit\"
+)
+add_custom_target(halt
+        COMMENT "Resetting and halting device"
+        COMMAND openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c \"init\; reset halt\; exit\"
+)
+add_custom_target(run
+        COMMENT "Resetting device and then running"
+        COMMAND openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c \"init\; reset\; exit\"
+)
+add_custom_target(program-halt
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMENT "Programming device with ${HEX_FILE}, and then halting"
+        COMMAND openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c \"program ${HEX_FILE} verify exit\"
+)
 add_custom_target(program
         DEPENDS ${PROJECT_NAME}.elf
+        COMMENT "Programming device with ${HEX_FILE}, and then running"
+        COMMAND openocd -f interface/stlink-v2.cfg -f target/stm32f1x.cfg -c \"program ${HEX_FILE} verify reset exit\"
+)
 
-        if (UNIX)
-            COMMAND st-flash --reset write ${BIN_FILE} 0x08000000
-        else ()
-            COMMAND D:/Programy/stlink-1.3.0-win64/bin/st-flash --reset write ${BIN_FILE} 0x08000000
-        endif ()
-        COMMENT "flashing ${BIN_FILE}")
+elseif (USE_ST_FLASH)
+
+add_custom_target(erase
+        COMMENT "Erasing device"
+        COMMAND st-flash erase
+        COMMAND echo If unlocking is required, please select openocd in CMakeLists.txt
+)
+add_custom_target(halt
+        COMMENT "Halting the device is not supported by st-link"
+        COMMAND echo If halting is required, please select openocd in CMakeLists.txt
+)
+add_custom_target(run
+        COMMENT "Resetting device and then running"
+        COMMAND st-flash reset
+)
+add_custom_target(program-halt
+        COMMENT "Halting the device is not supported by st-link"
+        COMMAND echo If halting is required, please select openocd in CMakeLists.txt
+)
+add_custom_target(program
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMENT "Programming device with ${HEX_FILE}, and then running"
+        COMMAND st-flash --reset --format ihex write ${HEX_FILE}
+)
+
+elseif (USE_BLACK_MAGIC)
+
+add_custom_target(erase
+        COMMENT "Erasing the device is not supported with Black Magic Probe"
+        COMMAND echo If erasing is required, please select another programming method in CMakeLists.txt
+)
+add_custom_target(halt
+        COMMENT "Halting the device is not supported with Black Magic Probe"
+        COMMAND echo If halting is required, please select openocd in CMakeLists.txt
+)
+add_custom_target(run
+        COMMENT "make run is not supported with Black Magic Probe"
+        COMMAND echo If erasing is required, please select another programming method in CMakeLists.txt
+)
+add_custom_target(program-halt
+        COMMENT "Halting the device is not supported with Black Magic Probe"
+        COMMAND echo If halting is required, please select openocd in CMakeLists.txt
+)
+add_custom_target(program
+        DEPENDS ${PROJECT_NAME}.elf
+        COMMENT "Programming device with ${PROJECT_NAME}.elf, and then running"
+        COMMAND chmod u+x flash.sh
+        COMMAND ./flash.sh
+)
+
+else ()
+
+add_custom_target(erase
+        COMMENT "No method of programming is available"
+        COMMAND echo Edit CMakeLists.txt and select a method of programming.
+)
+add_custom_target(halt
+        COMMENT "No method of programming is available"
+        COMMAND echo Edit CMakeLists.txt and select a method of programming.
+)
+add_custom_target(run
+        COMMENT "No method of programming is available"
+        COMMAND echo Edit CMakeLists.txt and select a method of programming.
+)
+add_custom_target(program-halt
+        COMMENT "No method of programming is available"
+        COMMAND echo Edit CMakeLists.txt and select a method of programming.
+)
+add_custom_target(program
+        COMMENT "No method of programming is available"
+        COMMAND echo Edit CMakeLists.txt and select a method of programming.
+)
+
+endif ()

@@ -19,16 +19,37 @@ Configuration settings are located in [config.h](./config.h). Modify as appropri
 * Extract the tarball to somewhere useful. In my case I'm using ~/opt/
 * Within the RS41HUP directory:
   * Edit CMakeLists.txt and set the correct path to the un-tar'd directory.
+  * Optionally enable a method of programming, in CMakeLists.txt.
   * `cmake .`
   * `make`
 
 ## Programming
 Either:
 * Use the ST Micro ST-LINK utility (Windows only), or
-* [stlink](https://github.com/texane/stlink) under Linux/OSX (though I haven't had much success with this yet...), or
-* Use `flash.sh` with a [Black Magic Probe](https://1bitsquared.com/products/black-magic-probe). You will need to modify the path to the debugger's serial interface. I haven't been able to do the initial erase/program via this method.
+* [openocd](http://openocd.org) under Linux/OSX/Windows, or
+* [stlink](https://github.com/texane/stlink) under Linux/OSX/Windows, or
+* Use `flash.sh` with a [Black Magic Probe](https://1bitsquared.com/products/black-magic-probe). You will need to modify this script with the path to the debugger's serial interface.
 
-Refer to [this file](./docs/programming_header.md) for programming header pinouts. Note that you will need to power up the RS41 using the power button before you will be able to flash the chip.
+Only the proprietary ST-LINK utility, or openocd, are known to support unlocking the device to remove the original manufacturer's firmware.
+
+Refer to [this file](./docs/programming_header.md) for programming header pinouts. Note that you will need to power up the RS41 using the power button, before you will be able to interact with the MCU chip.
+
+Please do not allow the RS41 to run the original manufacturer's firmware, as this will result in unlicensed radio transmissions. With the reset line connected to a debugger, it is possible to keep the MCU halted. However if the LED lights up after pressing the power button, then some firmware is definitely running - please erase the original firmware ASAP, or remove the batteries.
+
+The build system supports a number of useful operations via openocd or stlink:
+* `make erase` erases the flash, and if using openocd, unlocks a locked device
+* `make halt` resets and halts the device
+* `make run` resets the device and lets it run
+* `make program-halt` programs the device and halts it
+* `make program` programs the device and lets it run
+
+Additionally `make program` is supported with Black Magic Probe. Currently `halt` and `program-halt` are not supported with stlink. The `program` targets will first compile the firmware, if it is not up to date.
+
+A typical sequence for programming a freshly acquired RS41, would be:
+* openocd: `make erase program-halt`
+* stlink: Unlock the device using the proprietary (Windows) version of ST-LINK, and clear the flash page protection bits. Then program using either the proprietary ST-LINK, or the free replacement.
+
+An already unlocked RS41 does not require `make erase` before programming. Always remember to press the power button after inserting batteries, or the MCU will not be powered for programming.
 
 ## Usage
 * Program as above.
