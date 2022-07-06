@@ -9,8 +9,8 @@
 
 
 //************GLOBAL Settings*****************
-#define TRANSMIT_FREQUENCY  434.650f // MHz. (Default is within the ISM band. ARDF Frequency in Australia is 439.4 MHz) 
-#define CALLSIGN "N0CALL" // Put your callsign here, max. 15 characters
+#define TRANSMIT_FREQUENCY  439.400f // MHz. (Default is within the ISM band. ARDF Frequency in Australia is 439.4 MHz) 
+#define CALLSIGN "VK5ARG" // Put your callsign here, max. 15 characters
 
 // TX Power
 #define TX_POWER  5 // PWR 0...7 0- MIN ... 7 - MAX
@@ -29,14 +29,16 @@
 
 //*************BEACON SETTINGS****************
 // Morse Ident speed.
-#define MORSE_WPM	20
+#define MORSE_WPM	30
 
 // CW beacon on & off times.
-#define ON_TIME		10 // Seconds
-#define OFF_TIME	10 // Seconds
+#define ON_TIME		2 // Seconds
+#define OFF_TIME	1 // Seconds
 
 // Number of On/Off Repeats.
-#define ONOFF_REPEATS 1
+#define ONOFF_REPEATS 500
+
+#define PIPMODE 1
 
 // Low-Voltage Beacon 
 // If enabled (uncommmented), beacon the lat/lon of the fox in the CW ident when the battery voltage gets low.
@@ -50,6 +52,7 @@
 #define LOW_VOLTAGE_BEACON_THRESHOLD 2.2 // Volts
 
 // Low-Voltage Cutout - Kill power if the supply drops below this level. Useful to avoid destroying cells.
+// Set to 3.3v for a LiPo cell.
 // Set this to < 1 Volt for (essentially) no low-voltage cutout.
 #define LOW_VOLTAGE_CUTOUT 0.5 // Volts
 

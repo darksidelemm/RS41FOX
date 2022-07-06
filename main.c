@@ -112,12 +112,23 @@ int main(void) {
     send_morse_ident();
     _delay_ms(1000);
 
+    #ifdef PIPMODE
+      for (uint16_t pip = 0; pip < ONOFF_REPEATS; pip++){
+        radio_enable_tx();
+        _delay_ms(50);
+        radio_disable_tx();
+        _delay_ms(70);
+      }
+    #else
+
     for(int k = 0; k < ONOFF_REPEATS; k++){
       radio_enable_tx();
       _delay_ms(ON_TIME*1000);
       radio_disable_tx();
       _delay_ms(OFF_TIME*1000);
     }
+
+    #endif
 
     #ifdef LOW_VOLTAGE_BEACON
     check_gps_lock();
