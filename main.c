@@ -45,6 +45,7 @@ void send_low_battery_beacon();
 void power_down();
 void check_supply_voltage();
 void check_gps_lock();
+void wait_for_time(int hour, int minute);
 
 /**
  * GPS data processing
@@ -100,6 +101,10 @@ int main(void) {
   radio_set_tx_frequency(TRANSMIT_FREQUENCY);   
   radio_rw_register(0x71, 0x00, 1);
 
+  #ifdef ENABLE_START_AT_TIME
+  wait_for_time(START_HOUR,START_MINUTE);
+  #endif
+
   // If we aren't doing a low-voltage GPS position beacon,
   // just disable the GPS from the start.
   #ifndef LOW_VOLTAGE_BEACON
@@ -120,14 +125,12 @@ int main(void) {
         _delay_ms(70);
       }
     #else
-
-    for(int k = 0; k < ONOFF_REPEATS; k++){
-      radio_enable_tx();
-      _delay_ms(ON_TIME*1000);
-      radio_disable_tx();
-      _delay_ms(OFF_TIME*1000);
-    }
-
+      for(int k = 0; k < ONOFF_REPEATS; k++){
+        radio_enable_tx();
+        _delay_ms(ON_TIME*1000);
+        radio_disable_tx();
+        _delay_ms(OFF_TIME*1000);
+      }
     #endif
 
     #ifdef LOW_VOLTAGE_BEACON
@@ -228,4 +231,46 @@ void check_gps_lock(){
     ublox_gps_stop();
   }
 
+}
+
+void wait_for_time(int hour, int minute){
+
+  while(1){
+    // Check State of GPS lock
+    ublox_get_last_data(&gpsData);
+
+    if(gpsData.fix >= 3){
+      // We have GPS lock. 
+
+      // If it's the start of a minute, send a short high-low transmission.
+      if(gpsData.seconds == 0){
+        radio_enable_tx();
+        radio_rw_register(0x73, 0x03, 1);
+        _delay_ms(250);
+        radio_rw_register(0x73, 0x00, 1);
+        _delay_ms(250);
+        radio_disable_tx();
+      }
+
+      //Compare the current time with the start time
+      if((gpsData.minutes == minute) && (gpsData.hours == hour) ){
+        // We are at the start time! Exit this loop so we start transmitting.
+        return;
+      }
+
+    }else{
+      // No lock yet. Indicate this with a short low-high transmission.
+      radio_enable_tx();
+      radio_rw_register(0x73, 0x00, 1);
+      _delay_ms(250);
+      radio_rw_register(0x73, 0x03, 1);
+      _delay_ms(250);
+      radio_disable_tx();
+
+      _delay_ms(30000);
+    }
+
+  }
+
+  return;
 }

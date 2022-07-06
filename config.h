@@ -38,7 +38,15 @@
 // Number of On/Off Repeats.
 #define ONOFF_REPEATS 500
 
+// Pip-Mode - Send short 50ms pips instead of long CW tones.
 #define PIPMODE 1
+
+// Start At Time.
+// If enabled, the fox will attempt to get GPS lock, then wait until 
+// the specified time (hour/minute, UTC) before starting to transmit.
+#define ENABLE_START_AT_TIME 1
+#define START_HOUR 8
+#define START_MINUTE 55
 
 // Low-Voltage Beacon 
 // If enabled (uncommmented), beacon the lat/lon of the fox in the CW ident when the battery voltage gets low.
