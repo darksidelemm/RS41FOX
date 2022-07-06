@@ -246,10 +246,11 @@ void wait_for_time(int hour, int minute){
       if(gpsData.seconds == 0){
         radio_enable_tx();
         radio_rw_register(0x73, 0x03, 1);
-        _delay_ms(250);
+        _delay_ms(100);
         radio_rw_register(0x73, 0x00, 1);
-        _delay_ms(250);
+        _delay_ms(100);
         radio_disable_tx();
+        _delay_ms(1500);
       }
 
       //Compare the current time with the start time
@@ -258,13 +259,15 @@ void wait_for_time(int hour, int minute){
         return;
       }
 
+      _delay_ms(100);
+
     }else{
       // No lock yet. Indicate this with a short low-high transmission.
       radio_enable_tx();
       radio_rw_register(0x73, 0x00, 1);
-      _delay_ms(250);
+      _delay_ms(100);
       radio_rw_register(0x73, 0x03, 1);
-      _delay_ms(250);
+      _delay_ms(100);
       radio_disable_tx();
 
       _delay_ms(30000);
