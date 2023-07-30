@@ -11,6 +11,8 @@
 #include "init.h"
 #include "radio.h"
 
+__IO uint16_t ADCVal[2];
+
 SPI_InitTypeDef   SPI_InitStructure;
 USART_InitTypeDef USART_InitStructure;
 GPIO_InitTypeDef GPIO_Conf;

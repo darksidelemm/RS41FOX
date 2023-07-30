@@ -1,4 +1,4 @@
-__IO uint16_t ADCVal[2];
+extern __IO uint16_t ADCVal[2];
 #ifdef __cplusplus
 extern "C" {
 #endif
