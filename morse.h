@@ -1,6 +1,6 @@
 //
-//	Morse Code Playback Functions
-//	Mark Jessop 2018-04
+//  Morse Code Playback Functions
+//  Mark Jessop 2018-04
 //
 #ifndef RS41FOX_MORSE_H
 #define RS41FOX_MORSE_H

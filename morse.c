@@ -1,6 +1,6 @@
 //
-//	Morse Code Playback Functions
-//	Mark Jessop 2018-04
+//  Morse Code Playback Functions
+//  Mark Jessop 2018-04
 //
 //  Based on code from https://github.com/Paradoxis/Arduino-morse-code-translator/blob/master/main.ino
 //
@@ -54,7 +54,8 @@ char* MORSE_NUMBERS[] = {
 
 // Symbols (though we handle this in a bit of a hacky way.)
 char* MORSE_SYMBOLS[] = {
-	".-.-.-" // .
+  ".-.-.-", // .
+  "-..-."   // /
 };
 
 
@@ -75,7 +76,7 @@ void sendDotOrDash (char unit) {
 
   // Inter-element gap
   radio_inhibit_tx();
-  _delay_ms(MORSE_DELAY); 
+  _delay_ms(MORSE_DELAY);
 }
 
 
@@ -96,45 +97,49 @@ void sendMorseSequence (char* sequence) {
 
 
 
-void sendMorse(char* message){
+void sendMorse(char* message) {
 
-	int i = 0;
-	while (message[i] != '\0'){
-		char current = message[i];
+  int i = 0;
+  while (message[i] != '\0') {
+    char current = message[i];
 
-		// Lower case letters
-	    if (current >= 'a' && current <= 'z') {
-	      sendMorseSequence(MORSE_LETTERS[current - 'a']);
-	    }
+      // Lower case letters
+      if (current >= 'a' && current <= 'z') {
+        sendMorseSequence(MORSE_LETTERS[current - 'a']);
+      }
 
-	    // Capital case letters
-	    else if (current >= 'A' && current <= 'Z') {
-	      sendMorseSequence(MORSE_LETTERS[current - 'A']);
-	    }
+      // Capital case letters
+      else if (current >= 'A' && current <= 'Z') {
+        sendMorseSequence(MORSE_LETTERS[current - 'A']);
+      }
 
-	    // Numbers
-	    else if (current >= '0' && current <= '9') {
-	      sendMorseSequence(MORSE_NUMBERS[current - '0']);
-	    }
+      // Numbers
+      else if (current >= '0' && current <= '9') {
+        sendMorseSequence(MORSE_NUMBERS[current - '0']);
+      }
 
-	    else if (current == '.'){
-	    	sendMorseSequence(MORSE_SYMBOLS[0]);
-	    }
+      else if (current == '.') {
+        sendMorseSequence(MORSE_SYMBOLS[0]);
+      }
 
-	    // Space character (3500  ms)
-	    else if (current == ' ') {
-	      _delay_ms(MORSE_DELAY_SPACE);
-	    }
+      else if (current == '/') {
+        sendMorseSequence(MORSE_SYMBOLS[1]);
+      }
 
-	    // Treat all other characters as a space.
-	    else{
-	    	_delay_ms(MORSE_DELAY_SPACE);
-	    }
+      // Space character (3500  ms)
+      else if (current == ' ') {
+        _delay_ms(MORSE_DELAY_SPACE);
+      }
 
-		i++;
-	}
+      // Treat all other characters as a space.
+      else {
+        _delay_ms(MORSE_DELAY_SPACE);
+      }
 
-	radio_disable_tx();
+    i++;
+  }
+
+  radio_disable_tx();
 }
 
 
