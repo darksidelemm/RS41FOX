@@ -182,7 +182,8 @@ void check_supply_voltage(){
       uint8_t lon_d = (uint8_t) abs(gpsData.lon_raw / 10000000);
       uint32_t lon_fl = (uint32_t) abs(abs(gpsData.lon_raw) - lon_d * 10000000) / 1000;
 
-      sprintf(buf_tx, "VK5QI FOX %s%d.%04ld %s%d.%04ld ",        
+      sprintf(buf_tx, "%s FOX %s%d.%04ld %s%d.%04ld ",
+          callsign,
           gpsData.lat_raw < 0 ? "S" : "N", lat_d, lat_fl,
           gpsData.lon_raw < 0 ? "W" : "E", lon_d, lon_fl
       );
