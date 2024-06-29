@@ -8,16 +8,8 @@ SET(CMAKE_SYSTEM_VERSION 1)
 # Set toolchain path below.
 #
 
-if (UNIX)
-    set(TOOLCHAIN_DIR "$ENV{HOME}/opt/gcc-arm-none-eabi/bin")
-    CMAKE_FORCE_C_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-gcc GNU)
-    CMAKE_FORCE_CXX_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-g++ GNU)
-else ()
-    set(TOOLCHAIN_DIR "D:/Programy/GNU Tools ARM Embedded/5.4 2016q3/bin")
-    CMAKE_FORCE_C_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-gcc.exe GNU)
-    CMAKE_FORCE_CXX_COMPILER(${TOOLCHAIN_DIR}/arm-none-eabi-g++.exe GNU)
-endif ()
-
+CMAKE_FORCE_C_COMPILER(arm-none-eabi-gcc GNU)
+CMAKE_FORCE_CXX_COMPILER(arm-none-eabi-g++ GNU)
 
 #
 # Select a method of programming below.
@@ -60,7 +52,7 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
         COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}"
-        COMMAND ${TOOLCHAIN_DIR}/arm-none-eabi-size ${PROJECT_NAME}.elf)
+        COMMAND arm-none-eabi-size ${PROJECT_NAME}.elf)
 
 set(CMAKE_CXX_STANDARD 11)
 
