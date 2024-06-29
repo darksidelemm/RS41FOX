@@ -53,6 +53,10 @@
 // Set this to < 1 Volt for (essentially) no low-voltage cutout.
 #define LOW_VOLTAGE_CUTOUT 0.5 // Volts
 
+// Power Button Debounce Time in ms - Set this to 0 to disable the power button. Set this to the desired turn-off
+// time in milliseconds (typically 1000) to enable the power button. The power button must be held for this time to
+// turn off the fox. 
+#define POWER_BUTTON_DEBOUNCE_TIME 1000
 
 #endif
 #endif //RS41HUP_CONFIG_H

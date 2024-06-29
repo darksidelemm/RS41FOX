@@ -45,6 +45,7 @@ void send_low_battery_beacon();
 void power_down();
 void check_supply_voltage();
 void check_gps_lock();
+void check_power_button();
 
 /**
  * GPS data processing
@@ -218,4 +219,24 @@ void check_gps_lock(){
     ublox_gps_stop();
   }
 
+}
+
+void check_power_button(){
+  #if POWER_BUTTON_DEBOUNCE_TIME
+
+  const static uint16_t button_pressed_threshold = 2000;
+
+  // Increase a counter for each cycle that the power button is pressed.
+  // When count exceeds the equivalent debounce time, power down.
+  uint16_t count = 0;
+  do {
+    count++;
+    _delay_ms(25);
+    
+    if(count > (POWER_BUTTON_DEBOUNCE_TIME / 25)) {
+      power_down();
+    }
+  } while (ADCVal[1] > button_pressed_threshold);
+
+  #endif
 }
