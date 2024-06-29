@@ -115,15 +115,22 @@ int main(void) {
 
     for(int k = 0; k < ONOFF_REPEATS; k++){
       radio_enable_tx();
-      _delay_ms(ON_TIME*1000);
+      for(int i = 0; i < ON_TIME; i++){
+        check_power_button();
+        _delay_ms(1000);
+      }
       radio_disable_tx();
-      _delay_ms(OFF_TIME*1000);
+      for(int i = 0; i < ON_TIME; i++){
+        check_power_button();
+        _delay_ms(1000);
+      }
     }
 
     #ifdef LOW_VOLTAGE_BEACON
     check_gps_lock();
     #endif
     check_supply_voltage();
+    check_power_button();
 
   }
 
@@ -234,6 +241,24 @@ void check_power_button(){
     _delay_ms(25);
     
     if(count > (POWER_BUTTON_DEBOUNCE_TIME / 25)) {
+      // The user-initiated power off sequence needs to have an acknowledgement and delay so they release the power button.
+      // Continuing to press the power button after shutdown is asserted will turn the RS41 on again.
+
+      // Disable transmit and enable the green LED (in an "ACK" sort of way)
+      radio_disable_tx();
+      GPIO_ResetBits(GPIOB, GREEN);
+      _delay_ms(500);
+      GPIO_SetBits(GPIOB, GREEN);
+      
+      // Flash the red LED and transmit 3 times
+      for(int i = 0; i < 3; i++) {
+        radio_enable_tx();
+        GPIO_ResetBits(GPIOB, RED);
+        _delay_ms(750);
+        radio_disable_tx();
+        GPIO_SetBits(GPIOB, RED);
+        _delay_ms(250);
+      }
       power_down();
     }
   } while (ADCVal[1] > button_pressed_threshold);
