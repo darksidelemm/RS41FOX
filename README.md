@@ -13,7 +13,8 @@ Features:
 Configuration settings are located in [config.h](./config.h). Modify as appropriate before compiling/programming.
 
 ## Compilation
-(Currently only supporting compilation with GCC under Linux/OSX)
+
+### Building the firmware in a Linux environment
 
 * Grab the latest GNU ARM Embedded toolchain from here: https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
 * Extract the tarball to somewhere useful. In my case I'm using ~/opt/
@@ -22,6 +23,29 @@ Configuration settings are located in [config.h](./config.h). Modify as appropri
   * Optionally enable a method of programming, in CMakeLists.txt.
   * `cmake .`
   * `make`
+
+### Building the firmware with Docker
+
+1. Install Docker if not already installed
+2. Set the current directory to the RS41FOX source directory
+3. Build the RS41fox compiler Docker image using the following command. It is necessary to build the Docker image only once.
+    ```
+    docker build -t rs41fox_compiler .
+    ```
+4. Build the firmware using the following command. If you need to rebuild the firmware, simply run the command again.
+   On Linux/macOS, run:
+    ```
+    docker run --rm -it -v $(pwd):/usr/local/src/RS41FOX rs41fox_compiler
+    ```
+    On Windows CMD, run:
+    ```
+    docker run --rm -it -v %cd%:/usr/local/src/RS41FOX rs41fox_compiler
+    ```
+    On Windows PowerShell, run:
+    ```
+    docker run --rm -it -v ${pwd}:/usr/local/src/RS41FOX rs41fox_compiler
+    ```
+5. The firmware will be stored in file `build/RS41FOX.elf`
 
 ## Programming
 Either:
