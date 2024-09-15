@@ -120,7 +120,7 @@ int main(void) {
         _delay_ms(1000);
       }
       radio_disable_tx();
-      for(int i = 0; i < ON_TIME; i++){
+      for(int i = 0; i < OFF_TIME; i++){
         check_power_button();
         _delay_ms(1000);
       }
