@@ -1,15 +1,9 @@
 cmake_minimum_required(VERSION 3.6)
-include(CMakeForceCompiler)
 SET(CMAKE_SYSTEM_NAME "Generic")
 SET(CMAKE_SYSTEM_VERSION 1)
-
-
-#
-# Set toolchain path below.
-#
-
-CMAKE_FORCE_C_COMPILER(arm-none-eabi-gcc GNU)
-CMAKE_FORCE_CXX_COMPILER(arm-none-eabi-g++ GNU)
+set(CMAKE_MAKE_PROGRAM, make)
+set(CMAKE_C_COMPILER, arm-none-eabi-gcc)
+set(CMAKE_CXX_COMPILER, arm-none-eabi-g++)
 
 #
 # Select a method of programming below.

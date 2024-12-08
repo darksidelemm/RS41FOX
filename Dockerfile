@@ -1,12 +1,13 @@
-FROM fedora:36
+FROM debian:bookworm-slim
 
-RUN dnf install -y  \
-    gcc-c++ \
-    arm-none-eabi-gcc-cs \
-    arm-none-eabi-gcc-cs-c++ \
-    arm-none-eabi-binutils-cs \
-    arm-none-eabi-newlib \
-    cmake
+RUN apt update && \
+    apt upgrade -y && \
+    apt install -y --no-install-recommends \
+    cmake \
+    make \
+    g++ \
+    gcc-arm-none-eabi
+
 
 COPY docker_build.sh /build.sh
 RUN chmod +x /build.sh
