@@ -21,7 +21,6 @@
 #include "util.h"
 #include "morse.h"
 
-
 // IO Pin Definitions. The state of these pins are initilised in init.c
 #define GREEN  GPIO_Pin_7 // Inverted
 #define RED  GPIO_Pin_8 // Non-Inverted (?)
@@ -107,6 +106,16 @@ int main(void) {
   ublox_gps_stop();
   #endif
 
+  // radio_enable_tx();
+  // radio_enable_tone();
+
+  // uint16_t tone;
+
+  // while(1) {
+  //   tone = pwm_calculate_period(500);
+  //   pwm_timer_set_frequency(tone);
+  // }
+
   // Main Transmission Loop.
   while (1) {
     // Loop.
@@ -115,11 +124,14 @@ int main(void) {
 
     for(int k = 0; k < ONOFF_REPEATS; k++){
       radio_enable_tx();
+      radio_enable_tone();
       for(int i = 0; i < ON_TIME; i++){
         check_power_button();
         _delay_ms(1000);
       }
+      radio_inhibit_tone();
       radio_disable_tx();
+
       for(int i = 0; i < OFF_TIME; i++){
         check_power_button();
         _delay_ms(1000);
@@ -131,9 +143,7 @@ int main(void) {
     #endif
     check_supply_voltage();
     check_power_button();
-
   }
-
 }
 
 // Possible power savings?

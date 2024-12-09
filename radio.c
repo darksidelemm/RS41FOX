@@ -31,7 +31,40 @@ void radio_set_tx_frequency(const float freq_in_mhz) {
   radio_rw_register(0x77, (uint8_t) ((uint16_t)fc & 0xff), 1);
 }
 
+void radio_enable_tx() {
+  #ifdef MODULATE_FM
+  // Set modulation to FSK, direct async mode
+  radio_rw_register(0x71, 0b00010010, 1);
+
+  // Set deviation to 3.125KHz (625Hz * 5)
+  radio_rw_register(0x72, 5, 1);
+
+  // Enable TX
+  radio_rw_register(0x07, 0x4B, 1);
+
+  // Deinitialize SPI bus (shared pin with radio data in)
+  spi_deinit();
+
+  _delay_ms(FM_TX_DELAY);
+
+  // Initialize PWM timer
+  pwm_timer_init();
+  pwm_timer_use(true);
+
+  GPIO_SetBits(GPIOC, radioNSELpin);
+
+  #endif
+}
+
 void radio_disable_tx() {
+  #ifdef MODULATE_FM
+  pwm_timer_uninit();
+
+  GPIO_ResetBits(GPIOC, radioNSELpin);
+
+  spi_init();
+  #endif
+
   radio_rw_register(0x07, 0x40, 1);
 }
 
@@ -39,14 +72,22 @@ void radio_soft_reset() {
   radio_rw_register(0x07, 0x80, 1);
 }
 
-void radio_enable_tx() {
+void radio_enable_tone() {
+  #ifndef MODULATE_FM
   // Modified to set the PLL and Crystal enable bits to high. Not sure if this makes much differents.
   radio_rw_register(0x07, 0x4B, 1);
+  #else
+  pwm_timer_pwm_enable(true);
+  #endif
 }
 
-void radio_inhibit_tx() {
+void radio_inhibit_tone() {
+  #ifndef MODULATE_FM
   // Sleep mode, but with PLL idle mode enabled, in an attempt to reduce drift on key-up.
   radio_rw_register(0x07, 0x43, 1);
+  #else
+  pwm_timer_pwm_enable(false);
+  #endif
 }
 
 int8_t radio_read_temperature() {

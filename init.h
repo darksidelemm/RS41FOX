@@ -16,6 +16,7 @@ void init_usart_gps(const uint32_t speed, const uint8_t enable_irq);
 void spi_init();
 
 void spi_deinit();
+
 #ifdef __cplusplus
 }
 #endif
