@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <stm32f10x_spi.h>
 #include <stm32f10x_gpio.h>
+#include <stm32f10x_tim.h>
+#include "pwm.h"
+#include "init.h"
+#include "delay.h"
 
 static const uint16_t radioNSELpin = GPIO_Pin_13; // @ GPIOC
 static const uint16_t radioSDIpin = GPIO_Pin_15; // @ GPIOB!
@@ -25,13 +29,15 @@ uint8_t radio_rw_register(const uint8_t register_addr, uint8_t value, uint8_t wr
 
 void radio_set_tx_frequency(const float radio_set_tx_frequency);
 
+void radio_enable_tx();
+
 void radio_disable_tx();
 
 void radio_soft_reset();
 
-void radio_enable_tx();
+void radio_enable_tone();
 
-void radio_inhibit_tx();
+void radio_inhibit_tone();
 
 int8_t radio_read_temperature();
 

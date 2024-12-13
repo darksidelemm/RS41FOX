@@ -81,20 +81,20 @@ void NVIC_Conf()
 
 void RCC_Conf()
 {
-	 ErrorStatus HSEStartUpStatus;
-	  RCC_DeInit();
-	  RCC_HSEConfig(RCC_HSE_ON);
-	  HSEStartUpStatus = RCC_WaitForHSEStartUp();
-	  if(HSEStartUpStatus == SUCCESS)
-	  {
-			FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
-			FLASH_SetLatency(FLASH_Latency_2);
-			RCC_HCLKConfig(RCC_SYSCLK_Div4);
-			RCC_PCLK2Config(RCC_HCLK_Div4);
-			RCC_PCLK1Config(RCC_HCLK_Div2);
-			RCC_SYSCLKConfig(RCC_SYSCLKSource_HSE);
-			while(RCC_GetSYSCLKSource() != 0x04);
-  }
+	ErrorStatus HSEStartUpStatus;
+	RCC_DeInit();
+	RCC_HSEConfig(RCC_HSE_ON);
+	HSEStartUpStatus = RCC_WaitForHSEStartUp();
+	if(HSEStartUpStatus == SUCCESS)
+	{
+		FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+		FLASH_SetLatency(FLASH_Latency_2);
+		RCC_HCLKConfig(RCC_SYSCLK_Div4);
+		RCC_PCLK2Config(RCC_HCLK_Div4);
+		RCC_PCLK1Config(RCC_HCLK_Div2);
+		RCC_SYSCLKConfig(RCC_SYSCLKSource_HSE);
+		while(RCC_GetSYSCLKSource() != 0x04);
+	}
 }
 
 void init_port()

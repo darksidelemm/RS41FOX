@@ -62,7 +62,7 @@ char* MORSE_SYMBOLS[] = {
 // Send a single character
 void sendDotOrDash (char unit) {
 
-  radio_enable_tx();
+  radio_enable_tone();
 
   // Unit is a dot (500 ms)
   if (unit == MORSE_DOT) {
@@ -75,7 +75,7 @@ void sendDotOrDash (char unit) {
   }
 
   // Inter-element gap
-  radio_inhibit_tx();
+  radio_inhibit_tone();
   _delay_ms(MORSE_DELAY);
 }
 
@@ -98,6 +98,8 @@ void sendMorseSequence (char* sequence) {
 
 
 void sendMorse(char* message) {
+  
+  radio_enable_tx();
 
   int i = 0;
   while (message[i] != '\0') {
