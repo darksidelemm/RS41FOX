@@ -99,9 +99,6 @@ void RCC_Conf()
 
 void init_port()
 {
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
-	RCC_APB2PeriphResetCmd(RCC_APB2Periph_AFIO, DISABLE);
-	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	GPIO_Conf.GPIO_Pin = GPIO_Pin_12;
 	GPIO_Conf.GPIO_Mode = GPIO_Mode_Out_PP;

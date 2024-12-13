@@ -12,7 +12,7 @@
 #define TRANSMIT_FREQUENCY  434.650f // MHz. (Default is within the ISM band. ARDF Frequency in Australia is 439.4 MHz) 
 #define CALLSIGN "N0CALL" // Put your callsign here, max. 15 characters
 
-//#define MODULATE_FM // Enable CW via FM tone generation (leave commented for CW)
+#define MODULATE_FM // Enable CW via FM tone generation (leave commented for CW)
 #define FM_TONE_FREQ 1000 // FM CW modulation frequency (in Hz)
 #define FM_TX_DELAY 500 // TX delay in ms
 

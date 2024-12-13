@@ -106,16 +106,6 @@ int main(void) {
   ublox_gps_stop();
   #endif
 
-  // radio_enable_tx();
-  // radio_enable_tone();
-
-  // uint16_t tone;
-
-  // while(1) {
-  //   tone = pwm_calculate_period(500);
-  //   pwm_timer_set_frequency(tone);
-  // }
-
   // Main Transmission Loop.
   while (1) {
     // Loop.
